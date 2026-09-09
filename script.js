@@ -9,27 +9,30 @@ gsap.registerPlugin(ScrollTrigger);
    ELEMENTS
 ========================================= */
 
-const laptop = document.querySelector("#movingLaptop");
-const target = document.querySelector("#laptopTarget");
+const laptop =
+    document.querySelector("#movingLaptop");
+
+const aboutTarget =
+    document.querySelector("#laptopTarget");
+
+const servicesTarget =
+    document.querySelector("#servicesLaptopTarget");
 
 
 /* =========================================
-   WAIT FOR IMAGE
+   RESIZE TIMER
+========================================= */
+
+let resizeTimer;
+
+
+/* =========================================
+   WAIT FOR PAGE
 ========================================= */
 
 window.addEventListener("load", () => {
 
-    /*
-        First refresh ScrollTrigger after
-        all images have loaded.
-    */
-
     ScrollTrigger.refresh();
-
-
-    /*
-        Create laptop animation
-    */
 
     createLaptopAnimation();
 
@@ -37,31 +40,58 @@ window.addEventListener("load", () => {
 
 
 /* =========================================
-   LAPTOP SCROLL ANIMATION
+   LAPTOP ANIMATION
 ========================================= */
 
 function createLaptopAnimation() {
 
+    /*
+    =========================================
+    SAFETY CHECK
+    =========================================
+    */
+
+    if (
+        !laptop ||
+        !aboutTarget ||
+        !servicesTarget
+    ) {
+        console.error(
+            "Laptop or target element not found."
+        );
+
+        return;
+    }
+
 
     /*
-        Get the initial laptop position
+    =========================================
+    RESET LAPTOP
+    =========================================
+    */
+
+    gsap.set(laptop, {
+
+        x: 0,
+
+        y: 0,
+
+        scale: 1,
+
+        rotation: -3
+
+    });
+
+
+    /*
+    =========================================
+    GET LAPTOP POSITION
+    =========================================
     */
 
     const laptopRect =
         laptop.getBoundingClientRect();
 
-
-    /*
-        Get About target position
-    */
-
-    const targetRect =
-        target.getBoundingClientRect();
-
-
-    /*
-        Calculate target center
-    */
 
     const laptopCenterX =
         laptopRect.left +
@@ -73,91 +103,146 @@ function createLaptopAnimation() {
         laptopRect.height / 2;
 
 
-    const targetCenterX =
-        targetRect.left +
-        targetRect.width / 2;
+    /*
+    =========================================
+    GET ABOUT TARGET
+    =========================================
+    */
+
+    const aboutRect =
+        aboutTarget.getBoundingClientRect();
 
 
-    const targetCenterY =
-        targetRect.top +
-        targetRect.height / 2;
+    const aboutCenterX =
+        aboutRect.left +
+        aboutRect.width / 2;
+
+
+    const aboutCenterY =
+        aboutRect.top +
+        aboutRect.height / 2;
 
 
     /*
-        Difference between
-        laptop and target
+    =========================================
+    ABOUT MOVEMENT
+    =========================================
     */
 
-    const moveX =
-        targetCenterX -
+    const aboutX =
+        aboutCenterX -
         laptopCenterX;
 
 
-    const moveY =
-        targetCenterY -
+    const aboutY =
+        aboutCenterY -
         laptopCenterY;
 
 
     /*
-        Target scale
-
-        Example:
-
-        Laptop = 650px
-
-        Target = 650px
-
-        Scale = around 1
-
-        We can modify this later.
+    =========================================
+    ABOUT SCALE
+    =========================================
     */
 
-    const targetScale =
-        targetRect.width /
+    const aboutScale =
+        (aboutRect.width * 0.82) /
         laptopRect.width;
 
 
-    /* =========================================
-       GSAP TIMELINE
-    ========================================= */
+    /*
+    =========================================
+    GET SERVICES TARGET
+    =========================================
+    */
 
-    const timeline = gsap.timeline({
-
-        scrollTrigger: {
-
-            trigger: ".about",
-
-            start: "top bottom",
-
-            end: "top 20%",
-
-            scrub: 1.5,
-
-            /*
-                Markers help during development.
-
-                Change true → false
-                after everything works.
-            */
-
-            markers: false
-
-        }
-
-    });
+    const servicesRect =
+        servicesTarget.getBoundingClientRect();
 
 
-    /* =========================================
-       LAPTOP MOVEMENT
-    ========================================= */
+    const servicesCenterX =
+        servicesRect.left +
+        servicesRect.width / 2;
+
+
+    const servicesCenterY =
+        servicesRect.top +
+        servicesRect.height / 2;
+
+
+    /*
+    =========================================
+    SERVICES MOVEMENT
+    =========================================
+
+    Calculate movement from the
+    ORIGINAL laptop position.
+    */
+
+    const servicesX =
+        servicesCenterX -
+        laptopCenterX;
+
+
+    const servicesY =
+        servicesCenterY -
+        laptopCenterY;
+
+
+    /*
+    =========================================
+    SERVICES SCALE
+    =========================================
+    */
+
+    const servicesScale =
+        (servicesRect.width * 1) /
+        laptopRect.width;
+
+
+    /*
+    =========================================
+    MAIN TIMELINE
+    =========================================
+    */
+
+    const timeline =
+        gsap.timeline({
+
+            scrollTrigger: {
+
+                trigger: ".about",
+
+                start: "top bottom",
+
+                endTrigger: ".services",
+
+                end: "top 20%",
+
+                scrub: 1.5,
+
+                markers: false,
+
+                invalidateOnRefresh: true
+
+            }
+
+        });
+
+
+    /*
+    =========================================
+    HERO → ABOUT
+    =========================================
+    */
 
     timeline.to(laptop, {
 
-        x: moveX,
+        x: aboutX,
 
-        y: moveY,
+        y: aboutY,
 
-        scale: targetScale * 0.82,
+        scale: aboutScale,
 
         rotation: 0,
 
@@ -169,7 +254,32 @@ function createLaptopAnimation() {
 
 
     /*
-        Optional small glow effect
+    =========================================
+    ABOUT → SERVICES
+    =========================================
+    */
+
+    timeline.to(laptop, {
+
+        x: servicesX,
+
+        y: servicesY,
+
+        scale: servicesScale,
+
+        rotation: 0,
+
+        duration: 1,
+
+        ease: "none"
+
+    });
+
+
+    /*
+    =========================================
+    LAPTOP GLOW
+    =========================================
     */
 
     timeline.to(
@@ -177,18 +287,22 @@ function createLaptopAnimation() {
         {
 
             filter:
-                "drop-shadow(0 25px 50px rgba(0,120,255,0.25))",
+                "drop-shadow(0 25px 50px rgba(0,120,255,0.30))",
 
-            duration: 0.3
+            duration: 0.3,
+
+            ease: "none"
 
         },
         "<"
     );
 
 
-    /* =========================================
-       ABOUT CONTENT REVEAL
-    ========================================= */
+    /*
+    =========================================
+    ABOUT CONTENT REVEAL
+    =========================================
+    */
 
     gsap.from(
         ".about-content > *",
@@ -219,9 +333,11 @@ function createLaptopAnimation() {
     );
 
 
-    /* =========================================
-       ABOUT CARDS REVEAL
-    ========================================= */
+    /*
+    =========================================
+    ABOUT CARDS
+    =========================================
+    */
 
     gsap.from(
         ".about-card",
@@ -251,6 +367,110 @@ function createLaptopAnimation() {
         }
     );
 
+
+    /*
+    =========================================
+    SERVICES CONTENT
+    =========================================
+    */
+
+    gsap.from(
+        ".services-content > *",
+        {
+
+            x: -70,
+
+            opacity: 0,
+
+            stagger: 0.12,
+
+            duration: 0.8,
+
+            ease: "power3.out",
+
+            scrollTrigger: {
+
+                trigger: ".services",
+
+                start: "top 70%",
+
+                toggleActions:
+                    "play none none reverse"
+
+            }
+
+        }
+    );
+
+
+    /*
+    =========================================
+    SERVICES CARDS
+    =========================================
+    */
+
+    gsap.from(
+        ".service-card",
+        {
+
+            y: 70,
+
+            opacity: 0,
+
+            scale: 0.9,
+
+            stagger: 0.12,
+
+            duration: 0.8,
+
+            ease: "power3.out",
+
+            scrollTrigger: {
+
+                trigger: ".services",
+
+                start: "top 65%",
+
+                toggleActions:
+                    "play none none reverse"
+
+            }
+
+        }
+    );
+
+
+    /*
+    =========================================
+    AI CARD HIGHLIGHT
+    =========================================
+    */
+
+    gsap.to(
+        "#aiCard",
+        {
+
+            borderColor:
+                "rgba(20,150,255,0.95)",
+
+            boxShadow:
+                "0 0 45px rgba(0,130,255,0.35)",
+
+            scrollTrigger: {
+
+                trigger: ".services",
+
+                start: "top 60%",
+
+                end: "top 25%",
+
+                scrub: true
+
+            }
+
+        }
+    );
+
 }
 
 
@@ -258,17 +478,15 @@ function createLaptopAnimation() {
    RESIZE HANDLING
 ========================================= */
 
-let resizeTimer;
-
 window.addEventListener("resize", () => {
 
     clearTimeout(resizeTimer);
 
+
     resizeTimer = setTimeout(() => {
 
         /*
-            Kill existing ScrollTriggers
-            and rebuild positions.
+        Remove old ScrollTriggers
         */
 
         ScrollTrigger.getAll().forEach(
@@ -277,11 +495,15 @@ window.addEventListener("resize", () => {
 
 
         /*
-            Recreate animation
+        Rebuild animation
         */
 
         createLaptopAnimation();
 
+
+        /*
+        Refresh positions
+        */
 
         ScrollTrigger.refresh();
 
